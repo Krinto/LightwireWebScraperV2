@@ -1,5 +1,7 @@
 {
     "logConfigFile" : "/logs/log.json",
     "userName" : "example@email.com",
-    "password" : "hunter2"
+    "password" : "hunter2",
+    "pushbulletApiKey" : "myapikey",
+    "deviceToPush" : "Name of device to send push"
 }
