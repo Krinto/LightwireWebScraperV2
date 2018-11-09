@@ -2,29 +2,31 @@ import json, logging, logging.config, os
 import requests
 from requests.auth import HTTPBasicAuth
 from bs4 import BeautifulSoup
+from utilities import time_cache
 
 logger = logging.getLogger(__name__)
 config = json.loads(open('./config.json').read())
+timespan = 60 * 15
 
-def initLogging():
+def __initLogging():
     if os.path.exists(config['logConfigFile']):
         with open(config['logConfigFile']) as f:
             logging.config.dictConfig(json.load(f))
     else:
         logging.basicConfig(level='WARN')
 
-def authenticateWithLightwire():
+def __authenticateWithLightwire():
     payload = { "input-login": config['userName'], 'input-password': config['password'] ,'input-submit':'Login' }
     response = requests.post('https://account.lightwire.co.nz/authenticate', data=payload, verify=True)
     logger.info(response.url)
     return response
 
-def successfullyAuthenticated(page):
+def __successfullyAuthenticated(page):
     if(page.url == 'https://account.lightwire.co.nz/overview'):
         return True
     return False
 
-def parseDataUsageFromPage(page):
+def __parseDataUsageFromPage(page):
     soup = BeautifulSoup(page.text, 'html.parser')
     legend = soup.find(class_='progress-legend-wrap')
     usage_list = legend.find_all('span')
@@ -33,12 +35,21 @@ def parseDataUsageFromPage(page):
     total_data = remaining_data + used_data
     return { 'remaining' : remaining_data, 'used' : used_data, 'total' : total_data }
 
+
+@time_cache(timespan)
+def get_usage_data():
+    response = __authenticateWithLightwire()
+    if __successfullyAuthenticated(response):
+        return __parseDataUsageFromPage(response)
+    else:
+        return { 'error' : 'failed to authenticate' }
+
 def main():
-    initLogging()
-    response = authenticateWithLightwire()
-    if successfullyAuthenticated(response):
+    __initLogging()
+    response = __authenticateWithLightwire()
+    if __successfullyAuthenticated(response):
         logger.debug('success')
-        logger.debug(parseDataUsageFromPage(response))
+        logger.debug(__parseDataUsageFromPage(response))
     else:
         logger.debug('failed')
 
