@@ -1,0 +1,5 @@
+{
+    "logConfigFile" : "/logs/log.json",
+    "userName" : "example@email.com",
+    "password" : "hunter2"
+}
