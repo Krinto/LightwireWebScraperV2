@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, make_response
-from lightwire_service import get_usage_data
+from scraping_service import get_usage_data
 
 app = Flask(__name__)
 

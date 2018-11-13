@@ -2,7 +2,8 @@ import json, logging, logging.config, os
 from pushbullet import Pushbullet, Device
 
 logger = logging.getLogger(__name__)
-config = json.loads(open('./config.json').read())
+with open('./config.json', encoding='utf-8') as data_file:
+    config = json.loads(data_file.read())
 pb = Pushbullet(config['pushbulletApiKey'])
 
 def __initLogging():
@@ -12,16 +13,19 @@ def __initLogging():
     else:
         logging.basicConfig(level='WARN')
 
-def pushMessage(device, message):
+def __pushMessage(device, message):
     return device.push_note("Internet Usage Update", message)
 
-def getUsersDevice():
+def __getUsersDevice():
     return pb.get_device(config['deviceToPush'])
+
+def notifyUser(message):
+    __pushMessage(__getUsersDevice(), message)
 
 def main():
     __initLogging()
     logger.debug(pb.devices)
-    logger.debug(pushMessage(getUsersDevice(), "This is a test"))
+    logger.debug(__pushMessage(__getUsersDevice(), "This is a test"))
 
 if __name__ == '__main__':
     main()
